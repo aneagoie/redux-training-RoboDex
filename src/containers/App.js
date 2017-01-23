@@ -4,36 +4,22 @@ import CardList from "../components/CardList";
 import SearchBox from "../components/SearchBox";
 import Scroll from "../components/Scroll";
 import { connect } from "react-redux";
-import { setSearchTerm1, setSearchTerm2, requestRobots } from "../actions";
-import { filterRobotsSelector } from '../reducers';
+import { setSearchTerm, requestRobots } from "../actions";
 
 const mapStateToProps = state => {
   return {
-    searchTerm1: state.robotsSearch.searchTerm1,
-    searchTerm2: state.robotsSearch.searchTerm2,
-    robots: filterRobotsSelector(state),
+    searchTerm: state.robotsSearch.searchTerm,
+    robots: state.robotsRequest.robots,
     isPending: state.robotsRequest.isPending
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    onSearchChange1: event => dispatch(setSearchTerm1(event.target.value)),
-    onSearchChange2: event => dispatch(setSearchTerm2(event.target.value)),
+    onSearchChange: event => dispatch(setSearchTerm(event.target.value)),
     onRequestRobots: () => dispatch(requestRobots())
   };
 };
-
-// const mergeProps = (stateProps, dispatchProps) => {
-//   return {
-//     ...stateProps,
-//     ...dispatchProps,
-//     filteredRobots: stateProps.robots.filter(
-//       robot =>
-//         robot.name.toLowerCase().includes(stateProps.searchTerm.toLowerCase())
-//     )
-//   };
-// };
 
 class App extends Component {
   componentDidMount() {
@@ -41,17 +27,19 @@ class App extends Component {
   }
 
   render() {
-    const { robots, isPending, onSearchChange1, onSearchChange2 } = this.props;
+    const { robots, isPending, searchTerm, onSearchChange } = this.props;
+    const filteredRobots = robots.filter(
+      robot => robot.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
     return (
       <div className="tc">
         <h1>RoboDex</h1>
-        <SearchBox onSearchChange={onSearchChange1} />
-        <SearchBox onSearchChange={onSearchChange2} />
+        <SearchBox onSearchChange={onSearchChange} />
         <Scroll>
           {
             isPending
               ? <h2>Loading...</h2>
-              : <CardList robots={robots} />
+              : <CardList robots={filteredRobots} />
           }
         </Scroll>
       </div>
@@ -60,8 +48,7 @@ class App extends Component {
 }
 
 App.propTypes = {
-  searchTerm1: PropTypes.string.isRequired,
-  searchTerm2: PropTypes.string.isRequired,
+  searchTerm: PropTypes.string.isRequired,
   robots: PropTypes.array.isRequired,
   isPending: PropTypes.bool.isRequired
 };
